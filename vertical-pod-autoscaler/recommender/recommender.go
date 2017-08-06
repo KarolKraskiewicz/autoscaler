@@ -4,11 +4,11 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/metrics"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	v1lister "k8s.io/kubernetes/pkg/client/listers/core/v1"
 	resourceclient "k8s.io/metrics/pkg/client/clientset_generated/clientset/typed/metrics/v1alpha1"
@@ -46,10 +46,8 @@ func (r *recommender) Run() {
 	}
 }
 
-
-
 func NewRecommender(config *rest.Config, metricsFetcherInterval time.Duration) Recommender {
-	recommender:= &recommender{
+	recommender := &recommender{
 		metricsClient:           newMetricsClient(config),
 		metricsFetchingInterval: metricsFetcherInterval,
 	}
@@ -67,19 +65,6 @@ func newMetricsClient(config *rest.Config) metrics.Client {
 
 	return metrics.NewClient(metricsGetter, podLister, namespaceLister)
 }
-
-//func newPodLister(kubeClient kube_client.Interface) v1lister.PodLister {
-//	selector := fields.ParseSelectorOrDie("spec.nodeName!=" + "" + ",status.phase!=" + string(apiv1.PodSucceeded) + ",status.phase!=" + string(apiv1.PodFailed))
-//
-//	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", apiv1.NamespaceAll, selector)
-//	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-//	podLister := v1lister.NewPodLister(store)
-//	podReflector := cache.NewReflector(podListWatch, &apiv1.Pod{}, store, time.Hour)
-//	podReflector.Run()
-//
-//	return podLister
-//}
-
 
 func newPodLister(kubeClient kube_client.Interface) v1lister.PodLister {
 	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", apiv1.NamespaceAll, fields.Everything())

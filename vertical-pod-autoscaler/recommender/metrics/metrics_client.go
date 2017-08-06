@@ -18,9 +18,9 @@ package metrics
 
 import (
 	"github.com/golang/glog"
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/kubernetes/pkg/api/v1"
 	v1lister "k8s.io/kubernetes/pkg/client/listers/core/v1"
 	"k8s.io/metrics/pkg/apis/metrics/v1alpha1"
 	resourceclient "k8s.io/metrics/pkg/client/clientset_generated/clientset/typed/metrics/v1alpha1"
@@ -51,7 +51,7 @@ func NewClient(metricsGetter resourceclient.PodMetricsesGetter, podLister v1list
 }
 
 func (client *metricsClient) GetContainersUtilization() ([]*ContainerUtilizationSnapshot, error) {
-	glog.V(3).Infof("Getting ContainersUtilization",)
+	glog.V(3).Infof("Getting ContainersUtilization")
 
 	containerSpecs, err := client.getContainersSpec()
 	if err != nil {
@@ -102,8 +102,8 @@ func (client *metricsClient) getContainersUsage() ([]*containerUsageSnapshot, er
 	glog.V(3).Infof("%v namespaces retrived: %+v", len(namespaces), namespaces)
 
 	for _, namespace := range namespaces {
-		podMetricsInterface:= client.metricsGetter.PodMetricses(namespace)
-		podMetricsList, err := podMetricsInterface.List(metav1.ListOptions{LabelSelector: "k8s-app"})
+		podMetricsInterface := client.metricsGetter.PodMetricses(namespace)
+		podMetricsList, err := podMetricsInterface.List(metav1.ListOptions{})
 		if err != nil {
 			return nil, err
 		}

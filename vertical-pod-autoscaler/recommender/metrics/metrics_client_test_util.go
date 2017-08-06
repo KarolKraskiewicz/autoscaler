@@ -20,13 +20,12 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/mock"
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	clientapiv1 "k8s.io/client-go/pkg/api/v1"
 	core "k8s.io/client-go/testing"
-	"k8s.io/kubernetes/pkg/api/v1"
 	v1lister "k8s.io/kubernetes/pkg/client/listers/core/v1"
 	metricsapi "k8s.io/metrics/pkg/apis/metrics/v1alpha1"
 	"k8s.io/metrics/pkg/client/clientset_generated/clientset/fake"
@@ -102,20 +101,20 @@ func (tc *metricsClientTestCase) newContainerUtilizationSnapshot(id containerID,
 		SnapshotTime:   tc.snapshotTimestamp,
 		SnapshotWindow: tc.snapshotWindow,
 		Image:          id.ContainerName + "Image",
-		Request: clientapiv1.ResourceList{
-			clientapiv1.ResourceCPU:    *resource.NewQuantity(cpuReq, resource.DecimalSI),
-			clientapiv1.ResourceMemory: *resource.NewQuantity(memReq, resource.DecimalSI),
+		Request: v1.ResourceList{
+			v1.ResourceCPU:    *resource.NewQuantity(cpuReq, resource.DecimalSI),
+			v1.ResourceMemory: *resource.NewQuantity(memReq, resource.DecimalSI),
 		},
-		Usage: clientapiv1.ResourceList{
-			clientapiv1.ResourceCPU:    *resource.NewQuantity(cpuUsage, resource.DecimalSI),
-			clientapiv1.ResourceMemory: *resource.NewQuantity(memUsage, resource.DecimalSI),
+		Usage: v1.ResourceList{
+			v1.ResourceCPU:    *resource.NewQuantity(cpuUsage, resource.DecimalSI),
+			v1.ResourceMemory: *resource.NewQuantity(memUsage, resource.DecimalSI),
 		},
 	}
 }
 
 func (tc *metricsClientTestCase) createFakeMetricsClient() Client {
 	fakeMetricsGetter := &fake.Clientset{}
-	fakeMetricsGetter.AddReactor("list", "podmetricses", func(action core.Action) (handled bool, ret runtime.Object, err error) {
+	fakeMetricsGetter.AddReactor("list", "pods", func(action core.Action) (handled bool, ret runtime.Object, err error) {
 		return true, tc.getFakePodMetricsList(), nil
 	})
 
@@ -185,7 +184,7 @@ func newPod(snaps []*ContainerUtilizationSnapshot) *v1.Pod {
 			Name:  snap.ID.ContainerName,
 			Image: snap.Image,
 			Resources: v1.ResourceRequirements{
-				Requests: convertResourceListToServerAPIType(snap.Request),
+				Requests: snap.Request,
 			},
 		}
 	}

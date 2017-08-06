@@ -20,9 +20,8 @@ import (
 	"errors"
 	"time"
 
+	k8sapiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientapiv1 "k8s.io/client-go/pkg/api/v1"
-	k8sapiv1 "k8s.io/kubernetes/pkg/api/v1"
 )
 
 // Utilization of resources for a single container, in a given (short) period of time
@@ -41,9 +40,9 @@ type ContainerUtilizationSnapshot struct {
 	Image string
 
 	// Currently requested resources for this container
-	Request clientapiv1.ResourceList
+	Request k8sapiv1.ResourceList
 	// Actual usage of resources, during the SnapshotWindow.
-	Usage clientapiv1.ResourceList
+	Usage k8sapiv1.ResourceList
 }
 
 func NewContainerUtilizationSnapshot(snap *containerUsageSnapshot, spec *containerSpec) (*ContainerUtilizationSnapshot, error) {
@@ -56,7 +55,7 @@ func NewContainerUtilizationSnapshot(snap *containerUsageSnapshot, spec *contain
 		Image:          spec.Image,
 		SnapshotTime:   snap.SnapshotTime.Time,
 		SnapshotWindow: snap.SnapshotWindow.Duration,
-		Request:        convertResourceListToClientAPIType(spec.Request),
+		Request:        spec.Request,
 		Usage:          snap.Usage,
 	}, nil
 }
@@ -67,7 +66,7 @@ type containerUsageSnapshot struct {
 	SnapshotTime   metav1.Time
 	SnapshotWindow metav1.Duration
 
-	Usage clientapiv1.ResourceList
+	Usage k8sapiv1.ResourceList
 }
 
 type containerSpec struct {

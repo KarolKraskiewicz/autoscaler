@@ -20,9 +20,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"k8s.io/apimachinery/pkg/api/resource"
-	clientapiv1 "k8s.io/client-go/pkg/api/v1"
-	k8sapiv1 "k8s.io/kubernetes/pkg/api/v1"
 )
 
 type containerUtilizationTestCase struct {
@@ -61,18 +58,4 @@ func TestCreatingUtilizationSnapshotFromSameContainer(t *testing.T) {
 	_, err := NewContainerUtilizationSnapshot(tc.newMatchingSnap(), tc.newContainerSpec())
 
 	assert.NoError(t, err)
-}
-
-func TestTypeConversionToGoClient(t *testing.T) {
-	quantity1 := *resource.NewMilliQuantity(1234, resource.BinarySI)
-	quantity2 := *resource.NewQuantity(9, resource.DecimalSI)
-	input := make(k8sapiv1.ResourceList, 2)
-	input[k8sapiv1.ResourceCPU] = quantity1
-	input[k8sapiv1.ResourceMemory] = quantity2
-
-	output := convertResourceListToClientAPIType(input)
-
-	assert.Equal(t, quantity1, output[clientapiv1.ResourceCPU])
-	assert.Equal(t, quantity2, output[clientapiv1.ResourceMemory])
-	assert.Len(t, output, 2)
 }

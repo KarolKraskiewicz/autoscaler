@@ -84,3 +84,33 @@ func TestGetContainersUtilization(t *testing.T) {
 		}
 	}
 }
+
+func TestGetNamespaces(t *testing.T) {
+	tc := newMetricsClientTestCase()
+	metricsClient := tc.createFakeMetricsClient().(*metricsClient)
+
+	namespaces, err := metricsClient.getAllNamespaces()
+
+	assert.NoError(t, err)
+	assert.Len(t, namespaces, len(tc.getFakeNamespaces()), "It should return right number of Namespaces")
+}
+
+func TestGetContainersSpec(t *testing.T) {
+	tc := newMetricsClientTestCase()
+	metricsClient := tc.createFakeMetricsClient().(*metricsClient)
+
+	specs, err := metricsClient.getContainersSpec()
+
+	assert.NoError(t, err)
+	assert.Len(t, specs, len(tc.getAllSnaps()), "It should return right number of ContainerSpecs")
+}
+
+func TestGetContainersUsage(t *testing.T) {
+	tc := newMetricsClientTestCase()
+	metricsClient := tc.createFakeMetricsClient().(*metricsClient)
+
+	usages, err := metricsClient.getContainersUsage()
+
+	assert.NoError(t, err)
+	assert.Len(t, usages, len(tc.getAllSnaps()), "It should return right number of ContainerUsages")
+}
