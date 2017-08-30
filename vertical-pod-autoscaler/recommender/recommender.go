@@ -24,6 +24,8 @@ type recommender struct {
 	metricsFetchingInterval time.Duration
 }
 
+// Currently it just prints out current utilization to the console.
+// It will be soon replaced by something more useful.
 func (r *recommender) RunOnce() {
 	glog.V(3).Infof("Recommender Run")
 	utilizations, err := r.metricsClient.GetContainersUtilization()
@@ -66,15 +68,17 @@ func newMetricsClient(config *rest.Config) metrics.Client {
 	return metrics.NewClient(metricsGetter, podLister, namespaceLister)
 }
 
+// Creates PodLister, listing only not terminated pods.
 func newPodLister(kubeClient kube_client.Interface) v1lister.PodLister {
-	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", apiv1.NamespaceAll, fields.Everything())
+	selector := fields.ParseSelectorOrDie("status.phase!=" + string(apiv1.PodSucceeded) + ",status.phase!=" + string(apiv1.PodFailed))
+	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", apiv1.NamespaceAll, selector)
 	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	podLister := v1lister.NewPodLister(store)
 	podReflector := cache.NewReflector(podListWatch, &apiv1.Pod{}, store, time.Hour)
 	podReflector.Run()
 	return podLister
 }
-
+// Creates NamespaceLister, listing all namespaces.
 func newNamespaceLister(kubeClient kube_client.Interface) v1lister.NamespaceLister {
 	namespaceListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "namespaces", apiv1.NamespaceAll, fields.Everything())
 	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
