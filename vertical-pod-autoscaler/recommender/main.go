@@ -22,8 +22,8 @@ import (
 
 	"github.com/golang/glog"
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
-	kube_restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/rest"
+	kube_restclient "k8s.io/client-go/rest"
 )
 
 var (
