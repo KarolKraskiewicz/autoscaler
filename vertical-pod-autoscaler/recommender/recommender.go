@@ -28,6 +28,7 @@ import (
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	v1lister "k8s.io/kubernetes/pkg/client/listers/core/v1"
 	resourceclient "k8s.io/metrics/pkg/client/clientset_generated/clientset/typed/metrics/v1alpha1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/cluster"
 )
 
 // Recommender recommend resources for certain containers, based on utilization periodically got from metrics api.
@@ -36,7 +37,9 @@ type Recommender interface {
 }
 
 type recommender struct {
-	metricsClient           metrics.Client
+	oldMetricsClient metrics.Client
+	metricsClient cluster.MetricsClient
+
 	metricsFetchingInterval time.Duration
 }
 
@@ -44,13 +47,22 @@ type recommender struct {
 // It will be soon replaced by something more useful.
 func (r *recommender) RunOnce() {
 	glog.V(3).Infof("Recommender Run")
-	utilizations, err := r.metricsClient.GetContainersUtilization()
+	utilizations, err := r.oldMetricsClient.GetContainersUtilization()
 	if err != nil {
 		glog.Errorf("Cannot get containers utilization. Reason: %+v", err)
 	}
 	for n, utilization := range utilizations {
 		glog.Infof("Utilization #%v: %+v", n, utilization)
 	}
+
+	metricsSnapshots, err := r.metricsClient.GetContainersMetrics();
+	if err != nil {
+		glog.Errorf("Cannot get containers metrics. Reason: %+v", err)
+	}
+	for n, snap := range metricsSnapshots {
+		glog.Infof("ContainerMetricsSnapshot #%v: %+v", n, snap)
+	}
+
 }
 
 func (r *recommender) Run() {
@@ -69,15 +81,20 @@ func (r *recommender) Run() {
 // It requires cluster configuration object and duration between recommender intervals.
 func NewRecommender(config *rest.Config, metricsFetcherInterval time.Duration) Recommender {
 	recommender := &recommender{
-		metricsClient:           newMetricsClient(config),
+		oldMetricsClient: newOldMetricsClient(config),
+		metricsClient: newMetricsClient(config),
 		metricsFetchingInterval: metricsFetcherInterval,
 	}
 	glog.V(3).Infof("New Recommender created %+v", recommender)
 
 	return recommender
 }
+func newMetricsClient(config *rest.Config) cluster.MetricsClient {
+	metricsGetter := resourceclient.NewForConfigOrDie(config)
+	return cluster.NewMetricsClient(metricsGetter);
+}
 
-func newMetricsClient(config *rest.Config) metrics.Client {
+func newOldMetricsClient(config *rest.Config) metrics.Client {
 	kubeClient := kube_client.NewForConfigOrDie(config)
 
 	metricsGetter := resourceclient.NewForConfigOrDie(config)

@@ -24,7 +24,7 @@ import (
 type MetricName string
 
 // ResourceAmount represents quantity of a certain resource within a container.
-type ResourceAmount int
+type ResourceAmount int64
 
 const (
 	// ResourceCPU represents CPU in millicores (1core = 1000millicores).
