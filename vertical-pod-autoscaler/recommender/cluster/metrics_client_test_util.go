@@ -84,20 +84,15 @@ func (tc *metricsClientTestCase) createFakeMetricsClient() MetricsClient {
 	fakeMetricsGetter.AddReactor("list", "pods", func(action core.Action) (handled bool, ret runtime.Object, err error) {
 		return true, tc.getFakePodMetricsList(), nil
 	})
-
 	return NewMetricsClient(fakeMetricsGetter.MetricsV1beta1())
 }
 
 func (tc *metricsClientTestCase) getFakePodMetricsList() *metricsapi.PodMetricsList {
 	metrics := &metricsapi.PodMetricsList{}
-
-	if tc.pod1Snaps != nil {
+	if tc.pod1Snaps != nil && tc.pod2Snaps != nil {
 		metrics.Items = append(metrics.Items, makePodMetrics(tc.pod1Snaps))
-	}
-	if tc.pod2Snaps != nil {
 		metrics.Items = append(metrics.Items, makePodMetrics(tc.pod2Snaps))
 	}
-
 	return metrics
 }
 

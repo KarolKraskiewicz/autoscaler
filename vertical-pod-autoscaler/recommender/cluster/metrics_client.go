@@ -26,7 +26,10 @@ import (
 	resourceclient "k8s.io/metrics/pkg/client/clientset_generated/clientset/typed/metrics/v1beta1"
 )
 
+// MetricsClient provides simple metrics on resources usage on containter level.
 type MetricsClient interface {
+	// GetContainersMetrics returns an array of ContainerMetricsSnapshots,
+	// representing resource usage for every running container in the cluster
 	GetContainersMetrics() ([]*model.ContainerMetricsSnapshot, error)
 }
 
@@ -34,6 +37,8 @@ type metricsClient struct {
 	metricsGetter resourceclient.PodMetricsesGetter
 }
 
+// NewMetricsClient creates new instance of MetricsClient, which is used by recommender.
+// It requires an instance of PodMetricsesGetter, which is used for underlying communication with metrics server.
 func NewMetricsClient(metricsGetter resourceclient.PodMetricsesGetter) MetricsClient {
 	return &metricsClient{
 		metricsGetter: metricsGetter,
