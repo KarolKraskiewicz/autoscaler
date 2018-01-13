@@ -22,8 +22,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
 	api "k8s.io/kubernetes/pkg/apis/core"
-	"k8s.io/metrics/pkg/apis/metrics/v1alpha1"
-	resourceclient "k8s.io/metrics/pkg/client/clientset_generated/clientset/typed/metrics/v1alpha1"
+	"k8s.io/metrics/pkg/apis/metrics/v1beta1"
+	resourceclient "k8s.io/metrics/pkg/client/clientset_generated/clientset/typed/metrics/v1beta1"
 )
 
 type MetricsClient interface {
@@ -57,7 +57,7 @@ func (c *metricsClient) GetContainersMetrics() ([]*model.ContainerMetricsSnapsho
 	return metricsSnapshots, nil
 }
 
-func createContainerMetricsSnapshots(podMetrics v1alpha1.PodMetrics) []*model.ContainerMetricsSnapshot {
+func createContainerMetricsSnapshots(podMetrics v1beta1.PodMetrics) []*model.ContainerMetricsSnapshot {
 	snapshots := make([]*model.ContainerMetricsSnapshot, len(podMetrics.Containers))
 	for i, containerMetrics := range podMetrics.Containers {
 		snapshots[i] = newContainerMetricsSnapshot(containerMetrics, podMetrics)
@@ -65,7 +65,7 @@ func createContainerMetricsSnapshots(podMetrics v1alpha1.PodMetrics) []*model.Co
 	return snapshots
 }
 
-func newContainerMetricsSnapshot(containerMetrics v1alpha1.ContainerMetrics, podMetrics v1alpha1.PodMetrics) *model.ContainerMetricsSnapshot {
+func newContainerMetricsSnapshot(containerMetrics v1beta1.ContainerMetrics, podMetrics v1beta1.PodMetrics) *model.ContainerMetricsSnapshot {
 	usage := calculateUsage(containerMetrics.Usage)
 
 	return &model.ContainerMetricsSnapshot{

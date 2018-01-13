@@ -30,7 +30,7 @@ import (
 	core "k8s.io/client-go/testing"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
-	metricsapi "k8s.io/metrics/pkg/apis/metrics/v1alpha1"
+	metricsapi "k8s.io/metrics/pkg/apis/metrics/v1beta1"
 	"k8s.io/metrics/pkg/client/clientset_generated/clientset/fake"
 )
 
@@ -85,7 +85,7 @@ func (tc *metricsClientTestCase) createFakeMetricsClient() MetricsClient {
 		return true, tc.getFakePodMetricsList(), nil
 	})
 
-	return NewMetricsClient(fakeMetricsGetter.MetricsV1alpha1())
+	return NewMetricsClient(fakeMetricsGetter.MetricsV1beta1())
 }
 
 func (tc *metricsClientTestCase) getFakePodMetricsList() *metricsapi.PodMetricsList {
